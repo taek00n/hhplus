@@ -43,12 +43,13 @@ public class PointServiceTest {
      * 정상적인 포인트 충전
      * */
     @Test
-    void 포인트_정산_충전() {
+    void 포인트_정상_충전() {
         //given
         long id = 2;
         long amount = 200;
         //when
         pointService.charge(id, amount);
+        pointService.actionRequest();
         UserPoint userPoint = pointService.point(id);
         //then
         assertEquals(userPoint.point(), amount);
@@ -63,9 +64,16 @@ public class PointServiceTest {
         //given
         long id = 2;
         long amount = 0;
+        String errorMsg = "";
         //when
+        pointService.charge(id, amount);
+        try {
+            pointService.actionRequest();
+        } catch (IllegalArgumentException e) {
+            errorMsg = e.getMessage();
+        }
         //then
-        assertThrows(IllegalArgumentException.class, () -> pointService.charge(id, amount));
+        assertEquals("금액은 0보다 커야 됩니다.", errorMsg);
     }
 
     /**
@@ -78,9 +86,16 @@ public class PointServiceTest {
         //given
         long id = 2;
         long amount = 10001;
+        String errorMsg = "";
         //when
+        pointService.charge(id, amount);
+        try {
+            pointService.actionRequest();
+        } catch (IllegalArgumentException e) {
+            errorMsg = e.getMessage();
+        }
         //then
-        assertThrows(IllegalArgumentException.class, () -> pointService.charge(id, amount));
+        assertEquals("최대 적립 포인트를 초과하였습니다.", errorMsg);
     }
 
     /**
@@ -92,6 +107,7 @@ public class PointServiceTest {
         long id = 2L;
         long amount = 200;
         pointService.charge(id, amount);
+        pointService.actionRequest();
         //when
         List<PointHistory> pointHistoryList = pointService.history(id);
         //then
@@ -103,6 +119,25 @@ public class PointServiceTest {
     }
 
     /**
+     * 포인트 정상 사용
+     * 충전 후 사용
+     */
+    @Test
+    void 포인트_정상_사용() {
+        //given
+        long id = 1;
+        long chargeAmount = 100;
+        long useAmount = 100;
+        pointService.charge(id, chargeAmount);
+        pointService.use(id, useAmount);
+        //when
+        pointService.actionRequest();
+        UserPoint userPoint = pointService.point(id);
+        //then
+        assertEquals(0, userPoint.point());
+    }
+
+    /**
      * 충전된 포인트가 없을 때 포인트 사용
      * */
     @Test
@@ -110,24 +145,38 @@ public class PointServiceTest {
         //given
         long id = 1;
         long amount = 100;
+        String errorMsg = "";
         //when
+        pointService.use(id, amount);
+        try {
+            pointService.actionRequest();
+        } catch (IllegalArgumentException e) {
+            errorMsg = e.getMessage();
+        }
         //then
-        assertThrows(IllegalArgumentException.class, () -> pointService.use(id, amount));
+        assertEquals("포인트가 부족합니다.", errorMsg);
     }
 
     /**
      * 충전된 포인트보다 초과하여 사용
      * */
     @Test
-    void 충정된_포인트보다_초과_사용() {
+    void 충전된_포인트보다_초과_사용() {
         //given
         long id = 1;
         long chargeAmount = 100;
         long useAmount = 200;
+        String errorMsg = "";
         pointService.charge(id, chargeAmount);
+        pointService.use(id, useAmount);
         //when
+        try {
+            pointService.actionRequest();
+        } catch (IllegalArgumentException e) {
+            errorMsg = e.getMessage();
+        }
         //then
-        assertThrows(IllegalArgumentException.class, () -> pointService.use(id, useAmount));
+        assertEquals("포인트가 부족합니다.", errorMsg);
     }
 
     /**
