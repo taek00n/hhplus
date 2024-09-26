@@ -1,4 +1,4 @@
-###항해플러스 1주차 Test Driven Development
+### 항해플러스 1주차 Test Driven Development
 
 6기 8팀 김태현
 
@@ -23,7 +23,7 @@ Step 2
 
 ---
 
-####ConcurrentLinkedQueue
+#### ConcurrentLinkedQueue
 자바에서 동시성을 다루기 위한 자료구조.
 
 
@@ -35,9 +35,9 @@ Step 2
 
 ---
 
-###동시성 제어 테스트
+### 동시성 제어 테스트
 
-####ExecutoerService
+#### ExecutoerService
 
 각기 다른 Thread를 생성해서 원하는 작업을 진행할 수 있다.
 
@@ -45,7 +45,7 @@ Step 2
 
 
 
-####CountDownLatch 
+#### CountDownLatch 
 
 CountDownLatch 객체를 사용해서 Thread에서 작업 실행될 때 .countDown()을 해준다.
 
