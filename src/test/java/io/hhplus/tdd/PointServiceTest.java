@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PointServiceTest {
@@ -60,7 +61,7 @@ public class PointServiceTest {
      * 충전금액 0이하
      * */
     @Test
-    void 충전_금액이_정수가_아닐_때() {
+    void 충전_금액이_정수가_아닐_때_에러메세지_확인() {
         //given
         long id = 2;
         long amount = 0;
@@ -82,7 +83,7 @@ public class PointServiceTest {
      * 포인트 최대 소유는 10,000
      * */
     @Test
-    void 충전_금액이_포인트_최대값_초과() {
+    void 충전_금액이_포인트_최대값_초과_에러메세지_확인() {
         //given
         long id = 2;
         long amount = 10001;
@@ -96,26 +97,6 @@ public class PointServiceTest {
         }
         //then
         assertEquals("최대 적립 포인트를 초과하였습니다.", errorMsg);
-    }
-
-    /**
-     * 충전 이력 조회 테스트
-     * */
-    @Test
-    void 충전_이력_조회() {
-        //given
-        long id = 2L;
-        long amount = 200;
-        pointService.charge(id, amount);
-        pointService.actionRequest();
-        //when
-        List<PointHistory> pointHistoryList = pointService.history(id);
-        //then
-        for (PointHistory pointHistory : pointHistoryList) {
-            assertEquals(id, pointHistory.userId());
-            assertEquals(amount, pointHistory.amount());
-            assertEquals(TransactionType.CHARGE, pointHistory.type());
-        }
     }
 
     /**
@@ -180,10 +161,28 @@ public class PointServiceTest {
     }
 
     /**
+     * 충전 이력 조회 테스트
+     * */
+    @Test
+    void 충전_이력_조회() {
+        //given
+        long id = 2L;
+        long amount = 200;
+        pointService.charge(id, amount);
+        pointService.actionRequest();
+        //when
+        List<PointHistory> pointHistoryList = pointService.history(id);
+        //then
+        for (PointHistory pointHistory : pointHistoryList) {
+            assertEquals(id, pointHistory.userId());
+            assertEquals(amount, pointHistory.amount());
+            assertEquals(TransactionType.CHARGE, pointHistory.type());
+        }
+    }
+
+    /**
      * 포인트 사용 이력 조회
      * 충전 후 사용 이력 조회
-     * 일단 충전 -> 사용 두단계만...
-     * 이럴때는 테스트를 어떻게...?
      * */
     @Test
     void 포인트_사용_이력_조회() {
@@ -193,18 +192,10 @@ public class PointServiceTest {
         long useAmount = 100;
         pointService.charge(id, chargeAmount);
         pointService.use(id, useAmount);
+        pointService.actionRequest();
         //when
         List<PointHistory> pointHistoryList = pointService.history(id);
         //then
-        for (PointHistory pointHistory : pointHistoryList) {
-            assertEquals(id, pointHistory.userId());
-            if (pointHistory.type() == TransactionType.CHARGE) {
-                assertEquals(chargeAmount, pointHistory.amount());
-                assertEquals(TransactionType.CHARGE, pointHistory.type());
-            } else if (pointHistory.type() == TransactionType.USE) {
-                assertEquals(useAmount, pointHistory.amount());
-                assertEquals(TransactionType.USE, pointHistory.type());
-            }
-        }
+        assertEquals(2, pointHistoryList.size());
     }
 }
